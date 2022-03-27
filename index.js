@@ -55,7 +55,7 @@ if (LOAD_SLASH) {
 else {
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}`)
-        client.user.setActivity(`${client.guilds.cache} servers.`, {
+        client.user.setActivity(`Use '/play' for play music!`, {
             type: 'WATCHING'
         })
     })
