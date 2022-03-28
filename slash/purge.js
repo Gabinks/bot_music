@@ -26,11 +26,11 @@ module.exports = {
             return interaction.reply({ content: '**I can only delete 99 messages once!', ephemeral: true})
         } else {
             try{
-                let { size } = await interaction.channel.bulkDelete(amount)
-                await interaction.reply({ content: `Deleted ${size} messages.`, ephemeral: true})
+            let { size } = await interaction.channel.bulkDelete(amount)
+            await interaction.reply({ content: `Deleted ${size} messages`, ephemeral: true})
             } catch(e) {
-                console.log(e)
-                interaction.reply( {content: `I cannot delete messages that is older than 14 days.`, ephemeral: true})
+                console.lo
+                interaction.reply({ content: `I cannot delete messages that is older than 14 days.`, ephemeral: true})
             }
         }
     }
