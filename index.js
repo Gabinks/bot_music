@@ -37,8 +37,8 @@ client.commands = new Discord.Collection()
 
 for (const file of commandFiles){
     const command = require(`./moderation/${file}`);
-    commands.push(command.data.toJSON());
     client.commands.set(command.data.name, command);
+    if (LOAD_SLASH) commands.push(command.data.toJSON());
 }
 
 const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"))
@@ -63,30 +63,12 @@ if (LOAD_SLASH) {
         }
     })
 }
-else {
-    client.on("ready", () => {
-        console.log(`Logged in as ${client.user.tag}`)
-    })
-    client.on("interactionCreate", (interaction) => {
-        async function handleCommand() {
-            if (!interaction.isCommand()) return
-
-            const slashcmd = client.slashcommands.get(interaction.commandName)
-            if (!slashcmd) interaction.reply("Not a valid slash command")
-
-            await interaction.deferReply()
-            await slashcmd.run({ client, interaction })
-        }
-        handleCommand()
-    })
-    client.login(TOKEN)
-}
-
-client.once('ready', () => {
-
+if (LOAD_MODERATION){
     const rest = new REST({
         version: "9"
     }).setToken(TOKEN);
+
+    console.log("Deploying moderation commands")
 
     (async () => {
         try{
@@ -105,4 +87,28 @@ client.once('ready', () => {
             if (err) console.error(err);
         }
     })();
-});
+}
+else {
+    client.on("ready", () => {
+        console.log(`Logged in as ${client.user.tag}`)
+    })
+    client.on("interactionCreate", (interaction) => {
+        async function handleCommand() {
+            if (!interaction.isCommand()) return
+
+            const slashcmd = client.slashcommands.get(interaction.commandName)
+            if (!slashcmd) interaction.reply("Not a valid slash command")
+
+            await interaction.deferReply()
+            await slashcmd.run({ client, interaction })
+
+            const modcmd = client.commands.get(interaction.commandName)
+            if (!modcmd) interaction.reply("Not a valid moderation command")
+
+            await interaction.deferReply()
+            await modcmd.run({ client, interaction })
+        }
+        handleCommand()
+    })
+    client.login(TOKEN)
+}
