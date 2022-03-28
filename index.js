@@ -10,6 +10,7 @@ dotenv.config()
 const TOKEN = process.env.TOKEN
 
 const LOAD_SLASH = process.argv[2] == "load"
+const LOAD_MODERATION = process.argv[2] == "load"
 
 const CLIENT_ID = '957662669207375913'
 const GUILD_ID = '890326543988052048'
@@ -38,7 +39,7 @@ client.commands = new Discord.Collection()
 for (const file of commandFiles){
     const command = require(`./moderation/${file}`);
     client.commands.set(command.data.name, command);
-    if (LOAD_SLASH) commands.push(command.data.toJSON());
+    if (LOAD_MODERATION) commands.push(command.data.toJSON());
 }
 
 const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"))
