@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders")
+const { MessageEmbed } = require("discord.js")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,7 +18,7 @@ module.exports = {
 
         let amount = interaction.options.getInteger('amount')
     
-        if(isNaN(amount)) {
+        if(isNaN(amount) || amount < 1) {
             return interaction.reply({ content: '**Please specify a valid amount between 1 - 100!**', ephemeral: true})
         }
 
@@ -29,7 +29,7 @@ module.exports = {
             let { size } = await interaction.channel.bulkDelete(amount)
             await interaction.reply({ content: `Deleted ${size} messages`, ephemeral: true})
             } catch(e) {
-                console.lo
+                console.log(e)
                 interaction.reply({ content: `I cannot delete messages that is older than 14 days.`, ephemeral: true})
             }
         }

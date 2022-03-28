@@ -3,6 +3,7 @@ const dotenv = require("dotenv")
 const { REST } = require("@discordjs/rest")
 const { Routes } = require("discord-api-types/v9")
 const fs = require("fs")
+
 const { Player } = require("discord-player")
 
 dotenv.config()
@@ -55,9 +56,6 @@ if (LOAD_SLASH) {
 else {
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}`)
-        client.user.setActivity(`Use '/play' for play music!`, {
-            type: 'WATCHING'
-        })
     })
     client.on("interactionCreate", (interaction) => {
         async function handleCommand() {
