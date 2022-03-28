@@ -10,7 +10,6 @@ dotenv.config()
 const TOKEN = process.env.TOKEN
 
 const LOAD_SLASH = process.argv[2] == "load"
-const LOAD_MODERATION = process.argv[2] == "load"
 
 const CLIENT_ID = '957662669207375913'
 const GUILD_ID = '890326543988052048'
@@ -23,6 +22,7 @@ const client = new Discord.Client({
 })
 
 client.slashcommands = new Discord.Collection()
+client.commandsmod = new Discord.Collection()
 client.player = new Player(client, {
     ytdlOptions: {
         quality: "highestaudio",
@@ -30,16 +30,13 @@ client.player = new Player(client, {
     }
 })
 
-const commandFiles = fs.readdirSync("./moderation").filter(file => file.endsWith(".js"));
-
 let commands = []
 
-client.commands = new Discord.Collection()
-
+const commandFiles = fs.readdirSync("./moderation").filter(file => file.endsWith(".js"))
 for (const file of commandFiles){
-    const command = require(`./moderation/${file}`);
-    client.commands.set(command.data.name, command);
-    if (LOAD_MODERATION) commands.push(command.data.toJSON());
+    const command = require(`./moderation/${file}`)
+    client.commandsmod.set(command.data.name, command)
+    if (LOAD_SLASH) commands.push(command.data.toJSON())
 }
 
 const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"))
@@ -51,7 +48,7 @@ for (const file of slashFiles){
 
 if (LOAD_SLASH) {
     const rest = new REST({ version: "9" }).setToken(TOKEN)
-    console.log("Deploying slash commands")
+    console.log("Deploying commands...")
     rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {body: commands})
     .then(() => {
         console.log("Successfully loaded")
@@ -64,50 +61,23 @@ if (LOAD_SLASH) {
         }
     })
 }
-if (LOAD_MODERATION){
-    const rest = new REST({
-        version: "9"
-    }).setToken(TOKEN);
-
-    console.log("Deploying moderation commands")
-
-    (async () => {
-        try{
-            if (process.env.ENV === "production"){
-                await rest.put(Routes.applicationCommands(CLIENT_ID), {
-                    body: commands
-                });
-                console.log('Moderation file initialized globally.');
-            } else {
-                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
-                    body: commands
-                });
-                console.log('Moderation file initialized locally.');
-            }
-        } catch (err) {
-            if (err) console.error(err);
-        }
-    })();
-}
 else {
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}`)
+        client.user.setActivity('Type "/play" to play music!', {type: 'LISTENING'});
     })
     client.on("interactionCreate", (interaction) => {
         async function handleCommand() {
             if (!interaction.isCommand()) return
 
-            const slashcmd = client.slashcommands.get(interaction.commandName)
-            if (!slashcmd) interaction.reply("Not a valid slash command")
+            const slashcmd = client.slashcommands.get(interaction.commandName);
+            if (!slashcmd) interaction.reply("Not a valid slash command");
+            //const modcmd = client.commandsmod.get(interaction.commandName);
+            //if (!modcmd) await interaction.reply("Not a valid moderation command");
 
             await interaction.deferReply()
             await slashcmd.run({ client, interaction })
-
-            const modcmd = client.commands.get(interaction.commandName)
-            if (!modcmd) interaction.reply("Not a valid moderation command")
-
-            await interaction.deferReply()
-            await modcmd.run({ client, interaction })
+            //await modcmd.run({ client, interaction })
         }
         handleCommand()
     })

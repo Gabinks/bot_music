@@ -30,7 +30,7 @@ module.exports = {
             await interaction.reply({ content: `Deleted ${size} messages`, ephemeral: true})
             } catch(e) {
                 console.log(e)
-                interaction.reply({ content: `I cannot delete messages that is older than 14 days.`, ephemeral: true})
+                await interaction.reply({ content: `I cannot delete messages that is older than 14 days.`, ephemeral: true})
             }
         }
     }
