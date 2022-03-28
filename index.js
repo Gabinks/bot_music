@@ -29,7 +29,17 @@ client.player = new Player(client, {
     }
 })
 
+const commandFiles = fs.readdirSync("./moderation").filter(file => file.endsWith(".js"));
+
 let commands = []
+
+client.commands = new Discord.Collection()
+
+for (const file of commandFiles){
+    const command = require(`./moderation/${file}`);
+    commands.push(command.data.toJSON());
+    client.commands.set(command.data.name, command);
+}
 
 const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"))
 for (const file of slashFiles){
@@ -71,3 +81,28 @@ else {
     })
     client.login(TOKEN)
 }
+
+client.once('ready', () => {
+
+    const rest = new REST({
+        version: "9"
+    }).setToken(TOKEN);
+
+    (async () => {
+        try{
+            if (process.env.ENV === "production"){
+                await rest.put(Routes.applicationCommands(CLIENT_ID), {
+                    body: commands
+                });
+                console.log('Moderation file initialized globally.');
+            } else {
+                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+                    body: commands
+                });
+                console.log('Moderation file initialized locally.');
+            }
+        } catch (err) {
+            if (err) console.error(err);
+        }
+    })();
+});
